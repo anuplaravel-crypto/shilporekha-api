@@ -61,7 +61,12 @@ class ServiceApiTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('status', true)
-            ->assertJsonPath('data.slug', 'branding');
+            ->assertJsonPath('data.slug', 'branding')
+            // Regression: a fresh service has no subcategories loaded by
+            // default, so ServiceResource's whenLoaded() previously omitted
+            // the key entirely instead of returning an empty array — which
+            // crashed the admin UI's `service.subcategories.length`.
+            ->assertJsonPath('data.subcategories', []);
 
         $this->assertDatabaseHas('services', ['name' => 'Branding', 'slug' => 'branding']);
     }

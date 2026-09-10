@@ -26,7 +26,13 @@ class ServiceRepository
 
     public function create(array $data): Service
     {
-        return Service::create($data);
+        $service = Service::create($data);
+
+        // Load the (necessarily empty, for a brand-new service) relation so
+        // ServiceResource's whenLoaded('subcategories') always includes the
+        // key — matching all()/find()/update(), instead of omitting it only
+        // for freshly created services.
+        return $service->setRelation('subcategories', $service->subcategories()->get());
     }
 
     public function update(Service $service, array $data): Service
