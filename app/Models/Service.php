@@ -25,7 +25,7 @@ class Service extends Model
 
     public function subcategories(): HasMany
     {
-        return $this->hasMany(Subcategory::class);
+        return $this->hasMany(Subcategory::class)->orderBy('sort_order');
     }
 
     public function packages(): HasMany
