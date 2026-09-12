@@ -29,6 +29,11 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Fixed, dev-port-independent value so Sanctum's stateful-domain
+             check (EnsureFrontendRequestsAreStateful::fromFrontend()) passes
+             for tests that send a matching Referer, regardless of whatever
+             port the local .env currently points the real Vite server at. -->
+        <env name="SANCTUM_STATEFUL_DOMAINS" value="localhost"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
