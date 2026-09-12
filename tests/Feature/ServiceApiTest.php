@@ -22,17 +22,17 @@ class ServiceApiTest extends TestCase
             ->assertJsonCount(2, 'data');
     }
 
-    public function test_guest_can_view_a_single_service_with_subcategories(): void
+    public function test_guest_can_view_a_single_service_with_categories(): void
     {
         $service = Service::factory()->create();
-        $service->subcategories()->create(['name' => 'Fishing', 'slug' => 'fishing', 'sort_order' => 0]);
+        $service->categories()->create(['name' => 'Outdoor Adventure', 'slug' => 'outdoor-adventure', 'sort_order' => 0]);
 
         $response = $this->getJson("/api/services/{$service->id}");
 
         $response->assertOk()
             ->assertJsonPath('status', true)
             ->assertJsonPath('data.id', $service->id)
-            ->assertJsonCount(1, 'data.subcategories');
+            ->assertJsonCount(1, 'data.categories');
     }
 
     public function test_viewing_a_missing_service_returns_standard_404_envelope(): void
@@ -62,11 +62,11 @@ class ServiceApiTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('status', true)
             ->assertJsonPath('data.slug', 'branding')
-            // Regression: a fresh service has no subcategories loaded by
+            // Regression: a fresh service has no categories loaded by
             // default, so ServiceResource's whenLoaded() previously omitted
             // the key entirely instead of returning an empty array — which
             // crashed the admin UI's `service.subcategories.length`.
-            ->assertJsonPath('data.subcategories', []);
+            ->assertJsonPath('data.categories', []);
 
         $this->assertDatabaseHas('services', ['name' => 'Branding', 'slug' => 'branding']);
     }

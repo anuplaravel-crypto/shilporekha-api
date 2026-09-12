@@ -25,5 +25,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call(ServiceSeeder::class);
+        $this->call(StyleSeeder::class);
+        $this->call(ProductSeeder::class);
     }
 }

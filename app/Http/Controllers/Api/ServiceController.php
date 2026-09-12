@@ -21,7 +21,7 @@ class ServiceController extends Controller
 
     public function show(Service $service): JsonResponse
     {
-        $service->load('subcategories');
+        $service->load('categories');
 
         return $this->success(new ServiceResource($service));
     }

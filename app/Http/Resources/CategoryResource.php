@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SubcategoryResource extends JsonResource
+class CategoryResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -14,10 +14,11 @@ class SubcategoryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'category_id' => $this->category_id,
+            'service_id' => $this->service_id,
             'name' => $this->name,
             'slug' => $this->slug,
             'sort_order' => $this->sort_order,
+            'subcategories' => SubcategoryResource::collection($this->whenLoaded('subcategories')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

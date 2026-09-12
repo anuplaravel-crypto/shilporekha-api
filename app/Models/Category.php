@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Subcategory extends Model
+class Category extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'category_id',
+        'service_id',
         'name',
         'slug',
         'sort_order',
@@ -22,14 +22,14 @@ class Subcategory extends Model
         'sort_order' => 'integer',
     ];
 
-    public function category(): BelongsTo
+    public function service(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Service::class);
     }
 
-    public function portfolioItems(): HasMany
+    public function subcategories(): HasMany
     {
-        return $this->hasMany(PortfolioItem::class);
+        return $this->hasMany(Subcategory::class)->orderBy('sort_order');
     }
 
     public function products(): HasMany

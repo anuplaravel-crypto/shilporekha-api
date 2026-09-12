@@ -23,9 +23,14 @@ class Service extends Model
         'sort_order' => 'integer',
     ];
 
-    public function subcategories(): HasMany
+    public function categories(): HasMany
     {
-        return $this->hasMany(Subcategory::class)->orderBy('sort_order');
+        return $this->hasMany(Category::class)->orderBy('sort_order');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 
     public function packages(): HasMany

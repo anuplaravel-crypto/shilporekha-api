@@ -694,25 +694,27 @@ Tests run against an in-memory SQLite database (configured in `phpunit.xml`), in
 
 ## Domain model
 
-The core business taxonomy is a two-level tree — **Service → Subcategory** — not a flat category list, because each service's subcategories mean something different:
+The core business taxonomy is a three-level tree — **Service → Category (niche) → Subcategory (micro-niche)** — because each service's niches break down further (e.g. T-Shirt's "Outdoor Adventure" category covers the Fishing/Camping/Hiking/Hunting micro-niches). This used to be a flat two-level Service→Subcategory list; it was restructured to this three-level tree so `Product` could hang off the right granularity:
 
 ```
 Service (T-Shirt, Packaging, Logo, Branding)
-└── Subcategory (belongs to one Service)
-    T-Shirt:    Outdoor Adventure, Fishing, Camping, Hiking, Hunting, Motorsports, Western, Fitness, Typography, Vintage/Retro
-    Packaging:  Box Packaging, Pouch Packaging, Label Design, Bottle Packaging, Food Packaging
-    Logo:       Wordmark, Lettermark, Monogram, Symbol/Icon, Combination Mark
-    Branding:   Brand Identity, Brand Guidelines, Business Card, Social Media Branding, Marketing Collateral
-    └── PortfolioItem (belongs to one Subcategory)
+└── Category (belongs to one Service) — e.g. T-Shirt's Outdoor Adventure, Motorsports, Western, Fitness, Typography, Vintage & Retro
+    └── Subcategory (belongs to one Category) — e.g. Outdoor Adventure's Fishing, Camping, Hiking, Hunting
+        ├── PortfolioItem (belongs to one Subcategory)
+        └── Product (belongs to one Service + Category + Subcategory, denormalized — see below)
 ```
 
-Everything else hangs off `Service` directly, not off `Subcategory`:
+Everything else hangs off `Service` directly, not off `Category`/`Subcategory`:
 
 - **`Service.status`** is `active` or `coming_soon` — currently only T-Shirt is meant to be `active`; the other three are placeholders until built out.
-- **`Package`** (pricing tiers, e.g. Basic/Standard/Premium) belongs to a `Service`, not a `Subcategory` — pricing doesn't vary by niche within a service. Each `Package` has many `PackageFeature` rows (the bullet list shown per tier).
+- **`Package`** (pricing tiers, e.g. Basic/Standard/Premium) belongs to a `Service`, not a `Category` — pricing doesn't vary by niche within a service. Each `Package` has many `PackageFeature` rows (the bullet list shown per tier).
 - **`Order`** (a client's "start a project" brief submission) belongs to a `Service` via a nullable, `nullOnDelete` foreign key — deliberately so that deleting/retiring a `Service` later doesn't destroy past order history. Each `Order` has many `OrderAttachment` (uploaded style-reference files).
 - **`Testimonial`** and **`SiteSetting`** are standalone — no foreign keys. `SiteSetting` is a generic key-value store (`SiteSetting::get($key, $default)` / `SiteSetting::set($key, $value)`) for editable site config (site name, tagline, contact email, social links) rather than fixed columns.
 
-**`PortfolioItem` has no direct link to `Service`** — only to `Subcategory`. Reach the parent service via `$item->subcategory->service`, and eager-load both together (`PortfolioItem::with('subcategory.service')`) to avoid N+1 queries when listing portfolio items with their service.
+**`PortfolioItem` has no direct link to `Service`** — only to `Subcategory`. Reach the parent service via `$item->subcategory->category->service`, and eager-load all three together (`PortfolioItem::with('subcategory.category.service')`) to avoid N+1 queries when listing portfolio items with their service.
 
-`Package.price` is cast as `decimal:2`, so it's always a 2-decimal-place string, not a raw float.
+**`Product`** stores `service_id`, `category_id`, AND `subcategory_id` directly (rather than only `subcategory_id` and reaching the rest through the chain) so product listings/filters don't need to join three levels deep. `ProductService::assertTaxonomyIsConsistent()` enforces that these three IDs actually chain together (category belongs to that service, subcategory belongs to that category) on every create/update, since nothing at the database level stops a client from submitting a valid-but-unrelated combination. `Product.image_path` is normally a `storage/app/public` path from a real upload (`ProductResource` resolves it via `Storage::disk('public')->url()`), but a seeder/test may put a ready-made external URL there instead — `ProductResource` passes those through unchanged rather than mangling them.
+
+**`Style`** (Minimalist, Vintage, Bold Typography, ...) is a global lookup, not scoped to a `Service` — the same style vocabulary applies to every service's products. `Product.style_id` is nullable with `nullOnDelete`, since it's an optional tag, not a structural part of the taxonomy.
+
+`Package.price` and `Product.price` are cast as `decimal:2`, so they're always a 2-decimal-place string, not a raw float.

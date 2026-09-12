@@ -20,7 +20,7 @@ class ServiceResource extends JsonResource
             'icon' => $this->icon,
             'status' => $this->status,
             'sort_order' => $this->sort_order,
-            'subcategories' => SubcategoryResource::collection($this->whenLoaded('subcategories')),
+            'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

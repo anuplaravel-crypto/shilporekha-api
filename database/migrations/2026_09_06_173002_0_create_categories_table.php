@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('subcategories', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
-            $table->string('name');   // e.g. Fishing, Camping (under T-Shirt)
+            $table->string('name');   // e.g. Outdoor Adventure, Motorsports (under T-Shirt) — a niche
             $table->string('slug');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('subcategories');
+        Schema::dropIfExists('categories');
     }
 };
